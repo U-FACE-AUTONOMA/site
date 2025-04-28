@@ -1,0 +1,259 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estado de Cuenta - U-FACE-AUTONOMA</title>
+    <style>
+        /* Estilos básicos para la página de estado de cuenta */
+        :root { /* Copiar variables de color para consistencia */
+            --color-primary: #0D47A1;
+            --color-accent: #FFAB00;
+            --color-bg: #f8f9fa;
+            --color-text: #212529;
+            --color-card-bg: #ffffff;
+            --color-border: #dee2e6;
+            --color-success: #28a745;
+            --color-warning: #ffc107; /* Naranja para Atrasado */
+            --color-danger: #dc3545; /* Rojo para Moroso/Pendiente */
+             --font-family: 'Inter', sans-serif; /* Opcional: usar la misma fuente */
+        }
+        /* Aplicar modo oscuro si se pasa parámetro o se lee de localStorage (opcional avanzado) */
+        /* Por simplicidad, esta página estará en modo claro por defecto */
+
+        body {
+            font-family: var(--font-family, sans-serif);
+            margin: 0;
+            padding: 0;
+            background-color: var(--color-bg);
+            color: var(--color-text);
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 900px; /* Ancho máximo del contenido */
+            margin: 2rem auto; /* Centrar y dar margen */
+            padding: 2rem;
+            background-color: var(--color-card-bg);
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        h1, h2 {
+            color: var(--color-primary);
+            border-bottom: 2px solid var(--color-primary);
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+        h1 { font-size: 1.8rem; font-weight: 500; }
+        h2 { font-size: 1.4rem; font-weight: 500; margin-top: 2rem; }
+
+        /* Estilos de la tabla */
+        table {
+            width: 100%;
+            border-collapse: collapse; /* Bordes unidos */
+            margin-top: 1rem;
+        }
+        th, td {
+            border: 1px solid var(--color-border);
+            padding: 0.8rem 1rem; /* Más padding */
+            text-align: left;
+            font-size: 0.95rem;
+        }
+        th {
+            background-color: #e9ecef; /* Fondo gris claro para encabezados */
+            font-weight: 500;
+        }
+        tbody tr:nth-child(even) {
+            background-color: #f8f9fa; /* Filas alternas con fondo sutil */
+        }
+        td { vertical-align: middle; }
+
+        /* Estilos para el estado de la cuota */
+        .status {
+            display: inline-block;
+            padding: 0.3em 0.6em;
+            font-size: 0.85em;
+            font-weight: 700;
+            line-height: 1;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: baseline;
+            border-radius: 0.25rem;
+        }
+        .status-pagada { color: #fff; background-color: var(--color-success); }
+        .status-pendiente { color: #212529; background-color: var(--color-warning); } /* Pendiente = Atrasado leve? */
+        .status-atrasada { color: #fff; background-color: #fd7e14; } /* Naranja más fuerte para Atrasada */
+        .status-morosa { color: #fff; background-color: var(--color-danger); } /* Rojo para Morosa */
+
+        /* Resumen */
+        .summary-section p {
+            margin-bottom: 0.5rem;
+            font-size: 1.05rem;
+        }
+        .summary-section strong {
+            font-weight: 500;
+        }
+        #saldo-deudor {
+            color: var(--color-danger);
+            font-weight: bold;
+        }
+
+        footer {
+            text-align: center; margin-top: 3rem; padding-top: 1rem;
+            font-size: 0.85rem; color: #6c757d;
+            border-top: 1px solid var(--color-border);
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Estado de Cuenta Detallado</h1>
+
+        <section class="summary-section">
+            <h2>Resumen Financiero</h2>
+            <p><strong>Estudiante:</strong> Javiera Ignacia Soto Pérez</p>
+            <p><strong>RUT:</strong> 19.876.543-K</p>
+            <p><strong>Carrera:</strong> Ingeniería Comercial</p>
+            <p><strong>Año Académico:</strong> <span id="current-academic-year">2025</span></p>
+            <p><strong>Beneficios Vigentes:</strong> <span id="beneficios-vigentes">Gratuidad</span></p>
+            <p><strong>Estado General:</strong> <span id="estado-general">Al día</span></p>
+            <p><strong>Saldo Deudor Arancel:</strong> <span id="saldo-deudor">$0 CLP</span></p>
+            </section>
+
+        <section>
+            <h2>Detalle Arancel <span id="arancel-year">2025</span></h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Concepto</th>
+                        <th>Fecha Vencimiento</th>
+                        <th>Monto</th>
+                        <th>Estado</th>
+                        <th>Fecha Pago</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-cuotas-body">
+                    <tr><td colspan="5">Cargando detalles...</td></tr>
+                </tbody>
+            </table>
+        </section>
+
+         <section>
+            <h2>Matrícula <span id="matricula-year">2025</span></h2>
+             <p id="matricula-estado">Estado matrícula: Cargando...</p>
+        </section>
+
+        <footer>
+            <p>Información generada el: <span id="fecha-generacion">--/--/---- --:--</span></p>
+            <p>U-FACE-AUTONOMA | Plataforma Simulada</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Datos Simulados para Estado de Cuenta ---
+            const estudianteInfo = { // Podría venir de localStorage o URL, pero simulamos aquí
+                nombre: 'Javiera Ignacia Soto Pérez',
+                rut: '19.876.543-K',
+                carrera: 'Ingeniería Comercial',
+                beneficios: ['Gratuidad'],
+                matriculaPagada: true
+            };
+
+            const cuotasArancel = [
+                // Ejemplo con Gratuidad (todas cubiertas)
+                { concepto: 'Arancel Cuota 1/10', vencimiento: '2025-03-31', monto: 450000, estado: 'Cubierta por Gratuidad', fechaPago: null },
+                { concepto: 'Arancel Cuota 2/10', vencimiento: '2025-04-30', monto: 450000, estado: 'Cubierta por Gratuidad', fechaPago: null },
+                { concepto: 'Arancel Cuota 3/10', vencimiento: '2025-05-31', monto: 450000, estado: 'Pendiente (Cubierta por Gratuidad)', fechaPago: null },
+                // ... (más cuotas hasta la 10)
+                { concepto: 'Arancel Cuota 4/10', vencimiento: '2025-06-30', monto: 450000, estado: 'Pendiente (Cubierta por Gratuidad)', fechaPago: null },
+                 { concepto: 'Arancel Cuota 5/10', vencimiento: '2025-07-31', monto: 450000, estado: 'Pendiente (Cubierta por Gratuidad)', fechaPago: null },
+                 // Añadir ejemplo si no tuviera gratuidad:
+                // { concepto: 'Arancel Cuota 1/10', vencimiento: '2025-03-31', monto: 450000, estado: 'Pagada', fechaPago: '2025-03-28' },
+                // { concepto: 'Arancel Cuota 2/10', vencimiento: '2025-04-30', monto: 450000, estado: 'Pendiente', fechaPago: null }, // Pendiente = Atrasada leve
+            ];
+
+            // --- Llenar la Página con Datos ---
+            const year = new Date().getFullYear();
+            document.getElementById('current-academic-year').textContent = year;
+            document.getElementById('arancel-year').textContent = year;
+             document.getElementById('matricula-year').textContent = year;
+
+             // Resumen
+             document.getElementById('beneficios-vigentes').textContent = estudianteInfo.beneficios.length > 0 ? estudianteInfo.beneficios.join(', ') : 'Sin beneficios';
+             let saldoDeudor = 0;
+             let estadoGeneral = 'Al día';
+             cuotasArancel.forEach(c => {
+                 if (c.estado === 'Pendiente' || c.estado === 'Atrasada' || c.estado === 'Morosa') {
+                     // Solo sumar si no está cubierta por gratuidad (o simular que igual se debe informar)
+                     if (!estudianteInfo.beneficios.includes('Gratuidad')) {
+                         saldoDeudor += c.monto;
+                         if(estadoGeneral === 'Al día') estadoGeneral = 'Con Saldo Pendiente'; // O Atrasado/Moroso
+                     } else {
+                          // Si tiene gratuidad, el saldo deudor es 0 para el estudiante
+                     }
+                 }
+                 // Lógica más compleja para determinar estado "Atrasado" o "Moroso" según fecha actual vs vencimiento
+             });
+
+             document.getElementById('estado-general').textContent = estadoGeneral;
+             document.getElementById('saldo-deudor').textContent = `$${saldoDeudor.toLocaleString('es-CL')} CLP`;
+
+
+             // Matrícula
+             document.getElementById('matricula-estado').textContent = `Estado matrícula ${year}: ${estudianteInfo.matriculaPagada ? 'Pagada' : 'Pendiente'}`;
+
+
+            // Tabla de Cuotas
+            const tablaBody = document.getElementById('tabla-cuotas-body');
+            tablaBody.innerHTML = ''; // Limpiar placeholder
+
+            if (cuotasArancel.length > 0) {
+                cuotasArancel.forEach(cuota => {
+                    const row = tablaBody.insertRow();
+
+                    row.insertCell().textContent = cuota.concepto;
+                    row.insertCell().textContent = new Date(cuota.vencimiento + 'T00:00:00').toLocaleDateString('es-CL'); // Formato DD/MM/YYYY
+                    row.insertCell().textContent = `$${cuota.monto.toLocaleString('es-CL')}`; // Formato moneda chilena
+
+                    // Celda de Estado con estilo
+                    const cellEstado = row.insertCell();
+                    const spanEstado = document.createElement('span');
+                    spanEstado.classList.add('status');
+                    spanEstado.textContent = cuota.estado;
+                    // Aplicar clase CSS según estado
+                    if (cuota.estado.toLowerCase().includes('pagada')) {
+                        spanEstado.classList.add('status-pagada');
+                    } else if (cuota.estado.toLowerCase().includes('pendiente')) {
+                        // Podríamos añadir lógica para marcar como "Atrasada" si vencimiento < hoy
+                        const hoy = new Date();
+                        hoy.setHours(0,0,0,0); // Comparar solo fechas
+                        const venc = new Date(cuota.vencimiento + 'T00:00:00');
+                        if (venc < hoy && !cuota.estado.toLowerCase().includes('cubierta')) {
+                             spanEstado.textContent = 'Atrasada';
+                             spanEstado.classList.add('status-atrasada');
+                        } else {
+                             spanEstado.classList.add('status-pendiente'); // O un estilo neutro
+                        }
+                    } else if (cuota.estado.toLowerCase().includes('atrasada')) {
+                         spanEstado.classList.add('status-atrasada');
+                    } else if (cuota.estado.toLowerCase().includes('morosa')) {
+                         spanEstado.classList.add('status-morosa');
+                    } else if (cuota.estado.toLowerCase().includes('cubierta')) {
+                         spanEstado.classList.add('status-pagada'); // Usar estilo de pagada para cubierta
+                    }
+                     cellEstado.appendChild(spanEstado);
+
+                    row.insertCell().textContent = cuota.fechaPago ? new Date(cuota.fechaPago + 'T00:00:00').toLocaleDateString('es-CL') : '--';
+                });
+            } else {
+                tablaBody.innerHTML = '<tr><td colspan="5">No hay información de cuotas de arancel disponible.</td></tr>';
+            }
+
+            // Fecha de generación
+            document.getElementById('fecha-generacion').textContent = new Date().toLocaleString('es-CL');
+        });
+    </script>
+</body>
+</html>

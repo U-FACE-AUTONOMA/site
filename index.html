@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>U-FACE-AUTONOMA - Panel Estudiante</title>
+    <style>
+        /* --- Fuentes y Estilos Generales --- */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700&display=swap');
+        :root { /* ... (Variables de color sin cambios) ... */
+            --color-primary-light: #0D47A1; --color-accent-light: #FFAB00; --color-bg-light: #f8f9fa; --color-text-light: #212529; --color-card-bg-light: #ffffff; --color-border-light: #dee2e6; --color-shadow-light: rgba(0, 0, 0, 0.08); --color-success-light: #28a745; --color-danger-light: #dc3545;
+            --color-primary-dark: #64b5f6; --color-accent-dark: #ffd54f; --color-bg-dark: #121212; --color-text-dark: #e0e0e0; --color-card-bg-dark: #1e1e1e; --color-border-dark: #424242; --color-shadow-dark: rgba(255, 255, 255, 0.08); --color-success-dark: #4caf50; --color-danger-dark: #f44336;
+            --color-primary: var(--color-primary-light); --color-accent: var(--color-accent-light); --color-bg: var(--color-bg-light); --color-text: var(--color-text-light); --color-card-bg: var(--color-card-bg-light); --color-border: var(--color-border-light); --color-shadow: var(--color-shadow-light); --color-success: var(--color-success-light); --color-danger: var(--color-danger-light); --font-family: 'Inter', sans-serif;
+        }
+        .dark-mode { /* ... (Variables dark mode sin cambios) ... */
+             --color-primary: var(--color-primary-dark); --color-accent: var(--color-accent-dark); --color-bg: var(--color-bg-dark); --color-text: var(--color-text-dark); --color-card-bg: var(--color-card-bg-dark); --color-border: var(--color-border-dark); --color-shadow: var(--color-shadow-dark); --color-success: var(--color-success-dark); --color-danger: var(--color-danger-dark);
+        }
+        body { /* ... (sin cambios) ... */ font-family: var(--font-family); margin: 0; padding: 0; background-color: var(--color-bg); color: var(--color-text); line-height: 1.6; transition: background-color 0.3s ease, color 0.3s ease; font-size: 16px; }
+        /* --- Header (Sin Cambios) --- */
+        header { /* ... (sin cambios) ... */ background: linear-gradient(to right, var(--color-primary), #1976D2); color: white; padding: 1rem 1.5rem; box-shadow: 0 2px 5px var(--color-shadow); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; }
+        .header-title { /* ... */ } .header-right { /* ... */ } .datetime-display { /* ... */ } #current-time { /* ... */ } .dark-mode-switch { /* ... */ } .dark-mode-switch:hover { /* ... */ } .dark-mode-switch input { /* ... */ }
+        /* --- Main Content --- */
+        main { padding: 2rem 1.5rem; }
+        /* === Sección Biométrica (Sin Cambios CSS) === */
+        #biometric-section { background-color: var(--color-card-bg); padding: 3rem; border-radius: 12px; text-align: center; box-shadow: 0 6px 25px var(--color-shadow); margin: 0 auto 3rem auto; max-width: 550px; border: 1px solid var(--color-border); }
+        #biometric-section h2 { margin-top: 0; margin-bottom: 1rem; color: var(--color-text); font-weight: 500; font-size: 1.6rem; opacity: 0.9; }
+        #biometric-section h2::before { content: '👤'; margin-right: 0.5rem; opacity: 0.7; }
+        #biometric-section p { margin-bottom: 2rem; opacity: 0.7; font-size: 0.95rem; }
+        #video-container { position: relative; overflow: hidden; max-width: 320px; margin: 2rem auto; border: 1px solid var(--color-border); border-radius: 8px; background-color: var(--color-bg); display: flex; align-items: center; justify-content: center; color: var(--color-text); min-height: 240px; box-shadow: inset 0 0 10px rgba(0,0,0,0.05); }
+        #video { display: block; width: 100%; height: auto; border-radius: 7px; transform: scaleX(-1); }
+        #video-placeholder { display: block; padding: 1rem; text-align: center; font-style: italic; opacity: 0.7; }
+        .scan-line { display: none; position: absolute; left: 0; top: 0; width: 100%; height: 3px; background: linear-gradient(to right, transparent, var(--color-danger), transparent); box-shadow: 0 0 10px var(--color-danger); border-radius: 2px; z-index: 1; }
+        @keyframes scan-anim { 0% { top: 0%; } 50% { top: 98%; } 100% { top: 0%; } }
+        #video-container.scanning .scan-line { display: block; animation: scan-anim 2.5s infinite linear; }
+        #scan-button { margin-top: 2rem; background-color: var(--color-primary); color: white; border: none; padding: 0.9rem 2.5rem; border-radius: 8px; font-size: 1.05rem; font-weight: 500; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1); }
+        #scan-button:hover { opacity: 0.9; background-color: #1565C0; transform: translateY(-2px); box-shadow: 0 5px 12px rgba(0, 0, 0, 0.15); }
+        #scan-button:active { transform: scale(0.98) translateY(-1px); }
+        #scan-button:disabled { background-color: #aaa; cursor: not-allowed; opacity: 0.7; box-shadow: none; transform: none;}
+
+        /* === Panel Principal y Tarjetas (Sin Cambios Estructurales CSS) === */
+        #main-dashboard { display: none; flex-direction: column; gap: 1.5rem; }
+        .welcome-message { /* ... */ }
+        .welcome-message .subtitle { /* ... */ }
+        .welcome-message .quick-info { /* ... */ }
+        .welcome-message .quick-info p { /* ... */ }
+        .welcome-message .quick-info strong { /* ... */ }
+        .welcome-message .quick-links-container { /* ... */ }
+        .quick-link { /* ... */ }
+        .dashboard-content-area { display: flex; flex-wrap: wrap; gap: 1.5rem; }
+        .card { background-color: var(--color-card-bg); padding: 1.5rem; border-radius: 12px; box-shadow: 0 3px 10px var(--color-shadow); border: 1px solid var(--color-border); transition: all 0.3s ease; flex: 1 1 320px; min-width: 280px; display: flex; flex-direction: column; } /* Added flex display */
+        .card:hover { transform: translateY(-5px); box-shadow: 0 6px 15px var(--color-shadow); }
+        .card h3 { margin-top: 0; margin-bottom: 1rem; color: var(--color-primary); font-weight: 500; font-size: 1.2rem; border-bottom: 1px solid var(--color-border); padding-bottom: 0.6rem; display: flex; align-items: center; gap: 0.5rem; }
+        .card-content { flex-grow: 1; } /* Make content area grow */
+        .card ul { list-style: none; padding: 0; margin: 0; }
+        .card li, .card p { margin-bottom: 0.7rem; font-size: 0.95rem; opacity: 0.9; }
+        .card li:last-child, .card p:last-child { margin-bottom: 0; }
+        .card strong { font-weight: 500; color: var(--color-text); opacity: 1.0;}
+        .card a { color: var(--color-accent); font-weight: 500; }
+        .card a:hover { color: var(--color-primary); }
+
+        /* === Estilos Específicos Tarjetas === */
+        /* Noticias */
+        #news-card ul { /* ... */ } #news-card li { /* ... */ } #news-card li:last-child { /* ... */ } #news-card li strong { /* ... */ } #news-card li span { /* ... */ } #news-card li a { /* ... */ } #news-card li a:hover { /* ... */ }
+        /* Clima */
+        #weather-card #weather-info { /* ... */ } #weather-temp { /* ... */ } #weather-icon { /* ... */ } #weather-desc { /* ... */ } #weather-location { /* ... */ }
+        /* Motivación */
+        #motivacion-card { background: linear-gradient(135deg, var(--color-primary), var(--color-accent)); color: white; } /* Fondo degradado */
+        #motivacion-card h3 { color: white; border-bottom-color: rgba(255, 255, 255, 0.3); }
+        #frase-motivacional {
+            font-style: italic;
+            font-size: 1.05rem;
+            text-align: center;
+            padding: 1rem 0.5rem;
+            opacity: 0.95;
+            flex-grow: 1; /* Centrar verticalmente si la tarjeta crece */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #frase-motivacional.placeholder-text { color: rgba(255,255,255,0.7); }
+
+        /* Otros (Créditos, Notas, Finanzas, Asistencia) sin cambios */
+        .curso-creditos { /* ... */ } .nota { /* ... */ } .nota-aprobado { /* ... */ } .nota-reprobado { /* ... */ } .nota-fecha { /* ... */ } .financiera-detalle { /* ... */ } .financiera-detalle span { /* ... */ } .attendance-summary { /* ... */ } .attendance-item { /* ... */ } .attendance-item strong { /* ... */ } #asistencia-count strong { /* ... */ } #inasistencia-count strong { /* ... */ } #porcentaje-asistencia strong { /* ... */ }
+        /* === Footer y Utilidades === */
+        footer { /* ... */ } .placeholder-text { /* ... */ }
+
+    </style>
+</head>
+<body>
+
+    <header>
+         <div class="header-title">U-FACE-AUTONOMA</div>
+         <div class="header-right"> <div class="datetime-display"> <div id="current-date">...</div> <div id="current-time">...</div> </div> <label for="dark-mode-toggle" class="dark-mode-switch"> <input type="checkbox" id="dark-mode-toggle"> <span id="dark-mode-text">Modo Oscuro</span> </label> </div>
+    </header>
+
+    <main>
+        <section id="biometric-section">
+            <h2>Acceso Seguro</h2>
+            <p>Ubica tu rostro dentro del marco y presiona Verificar Identidad.</p>
+            <div id="video-container"> <video id="video" playsinline autoplay muted></video> <div id="video-placeholder">Activando cámara...</div> <div class="scan-line"></div> </div>
+            <button id="scan-button">Verificar Identidad</button>
+        </section>
+
+        <section id="main-dashboard">
+             <div class="welcome-message card">
+                 <h3 id="welcome-title">👋 ¡Bienvenido/a!</h3>
+                 <span class="subtitle">Tu resumen académico y recursos rápidos.</span>
+                 <div class="quick-info">
+                     <p id="academic-period"><strong>Periodo Académico:</strong> 2025 - Semestre 1</p>
+                     <p id="next-item-info"><strong>Próxima Actividad:</strong> <span class="placeholder-text">Calculando...</span></p>
+                 </div>
+                 <div class="quick-links-container">
+                     <a href="#" class="quick-link">📅 Horario</a> | <a href="#" class="quick-link">📝 Pendientes</a> | <a href="#" class="quick-link">🎓 U-Campus</a>
+                 </div>
+             </div>
+
+            <div class="dashboard-content-area">
+                 <div class="card" id="news-card">
+                     <h3>📰 Noticias Destacadas</h3>
+                     <div class="card-content"> <ul id="news-list"><li class="placeholder-text">Cargando...</li></ul> </div>
+                 </div>
+                 <div class="card" id="motivacion-card">
+                     <h3>✨ Frase del Día</h3>
+                     <div class="card-content"> <p id="frase-motivacional" class="placeholder-text">...</p> </div>
+                 </div>
+                 <div class="card" id="perfil-container">
+                    <h3>🧑‍🎓 Perfil</h3>
+                    <div class="card-content"> <p><strong>Nombre:</strong> <span id="perfil-nombre">...</span></p> <p><strong>Carrera:</strong> <span id="perfil-carrera">...</span></p> <p><strong>RUT:</strong> <span id="perfil-id">...</span></p> </div>
+                 </div>
+                <div class="card" id="resumen-dia-container">
+                    <h3>📅 Resumen del Día</h3>
+                     <div class="card-content"> <p><strong>Horario Hoy:</strong></p> <ul id="horario-hoy">...</ul> <div class="attendance-summary"> <div class="attendance-item" id="asistencia-count">...</div> <div class="attendance-item" id="inasistencia-count">...</div> <div class="attendance-item" id="porcentaje-asistencia">...</div> </div> </div>
+                 </div>
+                 <div class="card" id="weather-card">
+                     <h3>🌦️ Clima Actual</h3>
+                     <div class="card-content"> <div id="weather-info">...</div> <p id="weather-location">Santiago, CL</p> </div>
+                 </div>
+                 <div class="card" id="cursos-container">
+                     <h3>📚 Mis Cursos</h3>
+                     <div class="card-content"> <ul id="cursos-lista">...</ul> </div>
+                 </div>
+                 <div class="card" id="recursos-container">
+                     <h3>🔗 Recursos Rápidos</h3>
+                     <div class="card-content"> <ul id="recursos-lista">...</ul> </div>
+                 </div>
+                 <div class="card" id="pendientes-container">
+                     <h3>📝 Pendientes</h3>
+                     <div class="card-content"> <ul id="pendientes-lista">...</ul> </div>
+                 </div>
+                 <div class="card" id="calificaciones-container">
+                     <h3>📊 Calificaciones</h3>
+                     <div class="card-content"> <ul id="calificaciones-lista">...</ul> </div>
+                 </div>
+                 <div class="card" id="financiera-container">
+                     <h3>💰 Situación Financiera</h3>
+                     <div class="card-content"> <div id="financiera-resumen">...</div> <a href="estado_cuenta.html" target="_blank" id="ver-estado-cuenta">Ver Estado de Cuenta Detallado</a> </div>
+                 </div>
+                 <div class="card" id="vida-uni-container">
+                      <h3>📣 Vida Universitaria</h3>
+                      <div class="card-content"> <h4>Notificaciones</h4> <ul id="notificaciones-lista">...</ul> <h4>Próximos Eventos</h4> <ul id="eventos-lista">...</ul> </div>
+                  </div>
+            </div> </section>
+    </main>
+
+    <footer>
+        <p>© <span id="current-year">2025</span> U-FACE-AUTONOMA | Plataforma Simulada</p>
+    </footer>
+
+    <script>
+        // --- Script Principal ---
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log("DEBUG: DOM cargado."); setupDarkMode(); updateFooterYear(); startClock(); iniciarCamara(); setupEventListeners(); console.log("DEBUG: Inicialización completa.");
+        });
+
+        // --- Funciones de Inicialización (Sin Cambios) ---
+        async function iniciarCamara() { /* ... código sin cambios ... */ const videoElement = document.getElementById('video'); const videoPlaceholder = document.getElementById('video-placeholder'); if (!videoElement || !videoPlaceholder) { console.error("Elementos video/placeholder no encontrados."); if(videoPlaceholder) videoPlaceholder.textContent = "Error interno: Faltan elementos."; return; } videoPlaceholder.style.display = 'block'; videoElement.style.display = 'none'; if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) { try { const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false }); console.log("DEBUG: Acceso cámara OK."); videoElement.srcObject = stream; videoElement.onloadedmetadata = () => { videoPlaceholder.style.display = 'none'; videoElement.style.display = 'block'; videoElement.play().catch(e => { console.error("Error en video.play():", e); videoPlaceholder.textContent = "Error al reproducir video."; videoPlaceholder.style.display = 'block'; videoElement.style.display = 'none'; }); }; } catch (error) { console.error("Error en getUserMedia: ", error); let mensajeError = "Error al acceder a la cámara."; if (error.name === "NotAllowedError" || error.name === "PermissionDeniedError") mensajeError = "Permiso de cámara denegado."; else if (error.name === "NotFoundError" || error.name === "DevicesNotFoundError") mensajeError = "No se encontró cámara."; else if (error.name === "NotReadableError" || error.name === "TrackStartError") mensajeError = "Error de cámara (posiblemente en uso)."; videoPlaceholder.textContent = mensajeError; videoPlaceholder.style.display = 'block'; videoElement.style.display = 'none'; } } else { console.error("getUserMedia no soportado."); videoPlaceholder.textContent = "Acceso a cámara no soportado por tu navegador."; videoPlaceholder.style.display = 'block'; videoElement.style.display = 'none'; } }
+        let clockInterval = null; function startClock() { updateClock(); if (clockInterval) clearInterval(clockInterval); clockInterval = setInterval(updateClock, 1000); } function updateClock() { const now = new Date(); const dateEl = document.getElementById('current-date'); const timeEl = document.getElementById('current-time'); if (dateEl) { const opts = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }; dateEl.textContent = now.toLocaleDateString('es-CL', opts); } if (timeEl) { timeEl.textContent = now.toLocaleTimeString('es-CL', { hour12: false }); } }
+        function setupDarkMode() { const toggle = document.getElementById('dark-mode-toggle'); const text = document.getElementById('dark-mode-text'); if (!toggle) {return;} const applyTheme = (isDark) => { document.body.classList.toggle('dark-mode', isDark); toggle.checked = isDark; if(text) text.textContent = isDark ? "Modo Claro" : "Modo Oscuro";}; try { const prefDark = window.matchMedia('(prefers-color-scheme: dark)').matches; const saved = localStorage.getItem('theme'); applyTheme(saved === 'dark' || (!saved && prefDark)); toggle.addEventListener('change', () => { applyTheme(toggle.checked); localStorage.setItem('theme', toggle.checked ? 'dark' : 'light'); }); } catch (e) { console.error("Error Dark Mode:", e); } }
+        function updateFooterYear() { const span = document.getElementById('current-year'); if (span) span.textContent = new Date().getFullYear(); }
+        function setupEventListeners() { const btn = document.getElementById('scan-button'); if (btn) btn.addEventListener('click', simularEscaneoYCargarDashboard); else console.error("DEBUG: #scan-button no encontrado."); }
+
+        // --- Constantes y Datos Simulados (Añadida Frase Motivacional) ---
+        const SIMULATED_SCAN_DELAY = 2500; const SIMULATED_FETCH_DELAY_BASE = 250; const SIMULATED_FETCH_DELAY_RANDOM = 500; const FAIL_RATE = 0.0;
+        const estudiante = { nombre: 'Javiera Ignacia Soto Pérez', carrera: 'Ingeniería Comercial', id: '19.876.543-K' };
+        const horarioHoy = [ { hora: '08:30', curso: 'Microeconomía I', sala: 'E-201' }, { hora: '10:00', curso: 'Cálculo II', sala: 'A-305' }, { hora: '14:30', curso: 'Contabilidad Financiera', sala: 'B-102'} ];
+        const asistenciaGeneral = { asistencias: 48, inasistencias: 12, totalClases: 60 };
+        const misCursos = [ { nombre: 'Microeconomía I', sigla: 'ECO101', creditosSCT: 10 }, { nombre: 'Cálculo II', sigla: 'MAT102', creditosSCT: 10 }, { nombre: 'Contabilidad Financiera', sigla: 'CON101', creditosSCT: 8 }, { nombre: 'Administración de Empresas', sigla: 'ADM100', creditosSCT: 6 }, { nombre: 'Marketing Estratégico', sigla: 'MKT200', creditosSCT: 6 } ];
+        const recursosRapidos = [ { nombre: 'Biblioteca Central', url: '#' }, { nombre: 'Portal U-Campus', url: '#' }, { nombre: 'Reglamento Académico', url: '#' }, { nombre: 'Becas y Créditos', url: '#' }];
+        const pendientesProximos = [ { fecha: '2025-05-05', desc: 'Entrega Control 1 - Cálculo II' }, { fecha: '2025-05-12', desc: 'Certamen 1 - Microeconomía I' }, { fecha: '2025-05-19', desc: 'Presentación Grupal - Marketing' }, { fecha: '2025-05-26', desc: 'Entrega Informe Contabilidad' } ];
+        const calificacionesRecientes = [ { curso: 'Cálculo I', sigla: 'MAT101', nota: 4.5, fecha: '2025-04-15' }, { curso: 'Introducción a la Economía', sigla: 'ECO100', nota: 6.8, fecha: '2025-04-10' }, { curso: 'Taller de Liderazgo', sigla: 'HAB100', nota: 3.9, fecha: '2025-04-05' }, { curso: 'Estadística Descriptiva', sigla: 'EST101', nota: 5.0, fecha: '2025-03-28' } ];
+        const situacionFinanciera = { estado: 'Al día', arancelAnual: '$4.500.000 CLP', matriculaPagada: true, beneficios: ['Gratuidad'], proximoPago: null, montoProximo: null };
+        const notificaciones = ['Recordatorio: Ajuste de Inscripción de Asignaturas hasta el 30/04.', 'Suspensión de actividades Lunes 1 de Mayo (Feriado).'];
+        const eventosUniversidad = [ { fecha: '2025-05-15', nombre: 'Charla: Emprendimiento e Innovación en Chile' }, { fecha: '2025-05-21', nombre: 'Actividades Día de las Glorias Navales' }];
+        const climaSantiagoSimulado = { temp: 19, desc: 'Parcialmente Nublado', icon: '🌥️' };
+        const noticiasChileSimuladas = [ { titulo: "Gobierno detalla plan de reactivación económica post-sistema frontal", fuente: "Emol", url: "#" }, { titulo: "Avanza discusión sobre reforma al sistema de pensiones en el Senado", fuente: "Cooperativa", url: "#" }, { titulo: "Universidades ajustan calendarios académicos por contingencias", fuente: "Educación 2020", url: "#" }, { titulo: "Experto advierte sobre aumento de ciberataques a plataformas educativas", fuente: "CSIRT Gob", url: "#" }, { titulo: "Resultados Campeonato Nacional: U. de Chile empata de local", fuente: "ADN Radio", url: "#" } ];
+        // NUEVO: Frases Motivacionales
+        const frasesMotivacionales = [
+             'El éxito es la suma de pequeños esfuerzos repetidos día tras día.',
+             'Cree en ti mismo y todo será posible.',
+             'La mejor forma de predecir el futuro es crearlo.',
+             'No te detengas hasta que te sientas orgulloso.',
+             'Cada día es una nueva oportunidad para cambiar tu vida.',
+             'La disciplina es el puente entre metas y logros.',
+             'El aprendizaje es un tesoro que sigue a su dueño a todas partes.',
+             'Convierte tus heridas en sabiduría.'
+        ];
+
+        // --- Simulación Fetch (Sin Cambios) ---
+        function simularFetch(data, failRate = FAIL_RATE) { return new Promise((resolve, reject) => { const delay = SIMULATED_FETCH_DELAY_BASE + Math.random() * SIMULATED_FETCH_DELAY_RANDOM; setTimeout(() => { if (Math.random() < failRate) { reject(new Error("Error simulado.")); } else { resolve(JSON.parse(JSON.stringify(data))); } }, delay); }); }
+
+        // --- Simulación Escaneo y Carga (Sin Cambios) ---
+        async function simularEscaneoYCargarDashboard() { /* ... código sin cambios ... */ console.log("DEBUG: Iniciando simulación escaneo..."); const scanButton = document.getElementById('scan-button'); const biometricSection = document.getElementById('biometric-section'); const mainDashboard = document.getElementById('main-dashboard'); const videoContainer = document.getElementById('video-container'); if (scanButton) { scanButton.disabled = true; scanButton.textContent = "Verificando..."; } if (videoContainer) videoContainer.classList.add('scanning'); await new Promise(resolve => setTimeout(resolve, SIMULATED_SCAN_DELAY)); console.log("DEBUG: Escaneo simulado completo."); if (videoContainer) videoContainer.classList.remove('scanning'); /* Opcional: Detener cámara aquí */ if (biometricSection) biometricSection.style.display = 'none'; if (mainDashboard) mainDashboard.style.display = 'flex'; cargarContenidoDashboard(); }
+
+        // --- Carga Contenido Dashboard (Secuencial - CORREGIDO + Frase) ---
+        async function cargarContenidoDashboard() {
+            console.log("DEBUG: Cargando contenido dashboard (secuencialmente)...");
+            const welcomeTitle = document.getElementById('welcome-title');
+            if (welcomeTitle && estudiante.nombre) { welcomeTitle.textContent = `👋 ¡Hola, ${estudiante.nombre.split(' ')[0]}!`; }
+
+            // Carga secuencial con manejo de errores mejorado
+            await cargarContenidoTarjeta('Noticias', renderizarNoticias, simularFetch(noticiasChileSimuladas));
+            await cargarContenidoTarjeta('Motivacion', renderizarFrase, simularFetch(frasesMotivacionales)); // <-- Cargar Frase
+
+            // Cargar datos necesarios para "Próxima Actividad" y manejar posible null
+            const resumenDataArray = await cargarContenidoTarjeta('ResumenDia', renderizarResumenDia, Promise.all([simularFetch(horarioHoy), simularFetch(asistenciaGeneral)]));
+            const [horarioData, asistenciaData] = resumenDataArray || [null, null]; // Usar || para dar valor default si es null
+
+            const pendientesDataResult = await cargarContenidoTarjeta('Pendientes', renderizarPendientes, simularFetch(pendientesProximos));
+            const pendientesData = pendientesDataResult || null; // Usar || para dar valor default si es null
+
+            // Cargar el resto
+            await cargarContenidoTarjeta('Perfil', renderizarPerfil, simularFetch(estudiante));
+            await cargarContenidoTarjeta('Clima', renderizarClima, simularFetch(climaSantiagoSimulado));
+            await cargarContenidoTarjeta('Cursos', renderizarCursos, simularFetch(misCursos));
+            await cargarContenidoTarjeta('Recursos', renderizarRecursos, simularFetch(recursosRapidos));
+            await cargarContenidoTarjeta('Calificaciones', renderizarCalificaciones, simularFetch(calificacionesRecientes));
+            await cargarContenidoTarjeta('Financiera', renderizarFinanciera, simularFetch(situacionFinanciera));
+            await cargarContenidoTarjeta('VidaUni', renderizarVidaUniversitaria, Promise.all([simularFetch(notificaciones), simularFetch(eventosUniversidad)]));
+
+            // Calcular próximo evento (ahora maneja nulls internamente)
+            mostrarProximoEventoClase(horarioData, pendientesData);
+
+            console.log("DEBUG: Carga dashboard finalizada.");
+        }
+
+        // --- Carga Contenido Tarjeta (Devuelve Datos - Sin Cambios) ---
+        async function cargarContenidoTarjeta(nombreTarjeta, funcionRender, promesaFetch) { console.log(`DEBUG: Cargando ${nombreTarjeta}...`); try { const data = await promesaFetch; funcionRender(data); return data; } catch (error) { console.error(`DEBUG: Error ${nombreTarjeta}:`, error); const container = document.getElementById(`${nombreTarjeta.toLowerCase()}-card`) || document.getElementById(`${nombreTarjeta.toLowerCase()}-container`) || document.getElementById(`${nombreTarjeta.toLowerCase()}-info`) || document.getElementById(`${nombreTarjeta.toLowerCase()}-list`); if (container) { const contentArea = container.querySelector('ul, div.card-content, p:not(strong)'); if(contentArea) { contentArea.innerHTML = `<p style="color: var(--color-danger); font-style: italic;">Error al cargar.</p>`; } else { container.innerHTML += `<p style="color: var(--color-danger); font-style: italic; font-size: 0.9em;">Error.</p>`; } } return null; } } // Devuelve null en error
+
+        // --- Función Mostrar Próxima Actividad (Modificada para aceptar nulls) ---
+        function mostrarProximoEventoClase(horarioData, pendientesData) {
+            const nextItemElement = document.getElementById('next-item-info');
+            if (!nextItemElement) return;
+
+            nextItemElement.innerHTML = '<span class="placeholder-text">Calculando...</span>'; // Resetear
+            const ahora = new Date();
+            let proximaActividad = null;
+            let tipoActividad = '';
+
+            // 1. Buscar próxima clase HOY (Solo si horarioData no es null)
+            if (horarioData && Array.isArray(horarioData) && horarioData.length > 0) {
+                const hoyStr = ahora.toISOString().split('T')[0];
+                const clasesHoy = horarioData
+                    .map(clase => { const [hora, minuto] = clase.hora.split(':'); const fechaClase = new Date(`${hoyStr}T${hora}:${minuto}:00`); return { ...clase, fecha: fechaClase }; })
+                    .filter(clase => clase.fecha > ahora)
+                    .sort((a, b) => a.fecha - b.fecha);
+                if (clasesHoy.length > 0) { proximaActividad = clasesHoy[0]; tipoActividad = 'clase'; }
+            }
+
+            // 2. Buscar próximo pendiente (Solo si no hay clase hoy y pendientesData no es null)
+            if (!proximaActividad && pendientesData && Array.isArray(pendientesData) && pendientesData.length > 0) {
+                const pendientesFuturos = pendientesData
+                    .map(p => ({ ...p, fechaObj: new Date(p.fecha + 'T23:59:59') }))
+                    .filter(p => p.fechaObj >= ahora)
+                    .sort((a, b) => a.fechaObj - b.fechaObj);
+                if (pendientesFuturos.length > 0) { proximaActividad = pendientesFuturos[0]; tipoActividad = 'pendiente'; }
+            }
+
+            // 3. Mostrar resultado
+            if (proximaActividad) {
+                 let mensaje = 'Próx. Actividad: ';
+                 if (tipoActividad === 'clase') { mensaje += `<strong>${proximaActividad.curso}</strong> ${proximaActividad.hora} (Sala: ${proximaActividad.sala})`; }
+                 else if (tipoActividad === 'pendiente') { const fechaF = proximaActividad.fechaObj.toLocaleDateString('es-CL', { day: '2-digit', month: '2-digit' }); mensaje += `<strong>${proximaActividad.desc}</strong> (${fechaF})`; }
+                 nextItemElement.innerHTML = mensaje;
+            } else { nextItemElement.textContent = 'Próx. Actividad: Sin actividades próximas por ahora.'; }
+        }
+
+
+        // --- Funciones de Renderizado (Añadida renderizarFrase) ---
+
+        // NUEVA Función para renderizar Frase Motivacional
+        function renderizarFrase(frases) {
+            const elemento = document.getElementById('frase-motivacional');
+            if (elemento && frases && frases.length > 0) {
+                const indice = Math.floor(Math.random() * frases.length);
+                elemento.textContent = `"${frases[indice]}"`;
+                elemento.classList.remove('placeholder-text');
+            } else if (elemento) {
+                 elemento.textContent = '¡Que tengas un excelente día!'; // Fallback
+                 elemento.classList.remove('placeholder-text');
+            }
+            return frases; // Devolver data (aunque no se use después)
+        }
+
+        function renderizarNoticias(data) { /* ... (código sin cambios) ... */ const lista = document.getElementById('news-list'); if (!lista) return null; lista.innerHTML = ''; if (data && data.length > 0) { data.slice(0, 4).forEach(noticia => { const li = document.createElement('li'); const link = document.createElement('a'); link.href = noticia.url || '#'; link.textContent = noticia.titulo; link.target = "_blank"; const fuente = document.createElement('span'); fuente.textContent = ` (${noticia.fuente || 'Fuente desconocida'})`; li.appendChild(link); li.appendChild(fuente); lista.appendChild(li); }); } else { lista.innerHTML = '<li>No hay noticias disponibles.</li>'; } return data; }
+        function renderizarPerfil(data) { document.getElementById('perfil-nombre').textContent = data.nombre || 'N/A'; document.getElementById('perfil-carrera').textContent = data.carrera || 'N/A'; document.getElementById('perfil-id').textContent = data.id || 'N/A'; return data; }
+        function renderizarResumenDia(dataArray) { const [horario, asistencia] = dataArray || [null, null]; const lista = document.getElementById('horario-hoy'); lista.innerHTML = ''; if (horario && horario.length > 0) { horario.forEach(i => { const li = document.createElement('li'); li.textContent = `${i.hora} - ${i.curso} (Sala: ${i.sala})`; lista.appendChild(li); }); } else { lista.innerHTML = '<li>No hay clases hoy.</li>'; } const asistEl = document.getElementById('asistencia-count').querySelector('strong'); const inasistEl = document.getElementById('inasistencia-count').querySelector('strong'); const porcEl = document.getElementById('porcentaje-asistencia').querySelector('strong'); if (asistencia && typeof asistencia.asistencias === 'number' && typeof asistencia.inasistencias === 'number' && typeof asistencia.totalClases === 'number' && asistencia.totalClases > 0) { asistEl.textContent = asistencia.asistencias; inasistEl.textContent = asistencia.inasistencias; const porc = ((asistencia.asistencias / asistencia.totalClases) * 100).toFixed(0); porcEl.textContent = `${porc}%`; } else { asistEl.textContent = '--'; inasistEl.textContent = '--'; porcEl.textContent = '--%'; } return dataArray; }
+        function renderizarClima(data) { const cont = document.getElementById('weather-info'); if (cont && data) { cont.innerHTML = `<div id="weather-temp">${data.temp}°C <span id="weather-icon">${data.icon || ''}</span></div><div id="weather-desc">${data.desc || 'N/A'}</div>`; const ph = cont.querySelector('.placeholder-text'); if (ph) ph.style.display = 'none'; } else if (cont) { cont.innerHTML = '<p>Error clima.</p>'; } return data; }
+        function renderizarCursos(data) { const lista = document.getElementById('cursos-lista'); lista.innerHTML = ''; if (data && data.length > 0) { data.forEach(c => { const li = document.createElement('li'); const cred = `<span class="curso-creditos">(${c.creditosSCT || '?'} SCT)</span>`; li.innerHTML = `${c.nombre} (${c.sigla}) ${cred}`; lista.appendChild(li); }); } else { lista.innerHTML = '<li>No hay cursos.</li>'; } return data; }
+        function renderizarRecursos(data) { const lista = document.getElementById('recursos-lista'); lista.innerHTML = ''; if (data && data.length > 0) { data.forEach(r => { const li = document.createElement('li'); const a = document.createElement('a'); a.href = r.url || '#'; a.textContent = r.nombre; a.target = "_blank"; li.appendChild(a); lista.appendChild(li); }); } else { lista.innerHTML = '<li>No hay recursos.</li>'; } return data; }
+        function renderizarPendientes(data) { const lista = document.getElementById('pendientes-lista'); lista.innerHTML = ''; if (data && data.length > 0) { data.sort((a, b) => new Date(a.fecha) - new Date(b.fecha)); data.forEach(i => { const li = document.createElement('li'); const fecha = new Date(i.fecha + 'T00:00:00').toLocaleDateString('es-CL', {day:'2-digit', month:'2-digit'}); li.textContent = `(${fecha}) ${i.desc}`; lista.appendChild(li); }); } else { lista.innerHTML = '<li>No hay pendientes.</li>'; } return data; }
+        function renderizarCalificaciones(data) { const lista = document.getElementById('calificaciones-lista'); lista.innerHTML = ''; if (data && data.length > 0) { data.sort((a, b) => new Date(b.fecha) - new Date(a.fecha)); data.forEach(i => { const li = document.createElement('li'); const nota = parseFloat(i.nota); let cls = 'nota-aprobado'; if (!isNaN(nota) && nota < 4.0) cls = 'nota-reprobado'; const notaF = !isNaN(nota) ? nota.toFixed(1) : 'N/A'; const fechaF = i.fecha ? new Date(i.fecha + 'T00:00:00').toLocaleDateString('es-CL', {day:'2-digit', month:'2-digit', year:'2-digit'}) : ''; li.innerHTML = `${i.curso} (${i.sigla}): <span class="nota ${cls}">${notaF}</span> <span class="nota-fecha">(${fechaF})</span>`; lista.appendChild(li); }); } else { lista.innerHTML = '<li>No hay calificaciones.</li>'; } return data; }
+        function renderizarFinanciera(data) { const cont = document.getElementById('financiera-resumen'); cont.innerHTML = ''; if (data) { const pE = document.createElement('p'); pE.innerHTML = `<strong>Estado General:</strong> ${data.estado || 'N/I'}`; cont.appendChild(pE); const dD = document.createElement('div'); dD.classList.add('financiera-detalle'); dD.innerHTML += `<p><strong>Arancel Anual:</strong> <span>${data.arancelAnual || 'N/I'}</span></p>`; dD.innerHTML += `<p><strong>Matrícula ${new Date().getFullYear()}:</strong> <span>${data.matriculaPagada ? 'Pagada' : 'Pendiente'}</span></p>`; if(data.beneficios && data.beneficios.length > 0) { dD.innerHTML += `<p><strong>Beneficios:</strong> <span>${data.beneficios.join(', ')}</span></p>`; } else { dD.innerHTML += `<p><strong>Beneficios:</strong> <span>Sin beneficios</span></p>`; } if(data.proximoPago && data.montoProximo) { dD.innerHTML += `<p><strong>Próximo Pago:</strong> <span>${data.proximoPago} (${data.montoProximo})</span></p>`; } else if (!data.beneficios || !data.beneficios.includes('Gratuidad')) { dD.innerHTML += `<p><strong>Próximo Pago:</strong> <span>Consultar</span></p>`; } cont.appendChild(dD); } else { cont.innerHTML = '<p>No disponible.</p>'; } return data; }
+        function renderizarVidaUniversitaria(dataArray) { const [notif, ev] = dataArray || [null, null]; const nLista = document.getElementById('notificaciones-lista'); nLista.innerHTML = ''; if(notif && notif.length > 0) { notif.forEach(i => { const li = document.createElement('li'); li.textContent = i; nLista.appendChild(li); }); } else { nLista.innerHTML = '<li>Sin notificaciones.</li>'; } const eLista = document.getElementById('eventos-lista'); eLista.innerHTML = ''; if(ev && ev.length > 0) { ev.sort((a, b) => new Date(a.fecha) - new Date(b.fecha)); ev.forEach(i => { const li = document.createElement('li'); const f = new Date(i.fecha + 'T00:00:00').toLocaleDateString('es-CL', {day:'2-digit', month:'short'}); li.textContent = `(${f}) ${i.nombre}`; eLista.appendChild(li); }); } else { eLista.innerHTML = '<li>Sin eventos.</li>'; } return dataArray; }
+
+    </script>
+
+</body>
+</html>
